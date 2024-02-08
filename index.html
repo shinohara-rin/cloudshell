@@ -1,0 +1,116 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.9.0/lib/xterm-addon-web-links.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-canvas@0.5.0/lib/xterm-addon-canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css"
+    />
+    <title>Document</title>
+  </head>
+  <style>
+    html {
+      overflow: hidden;
+    }
+    .root {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .gutter {
+      background-color: #eee;
+      background-repeat: no-repeat;
+      background-position: 50%;
+    }
+
+    .gutter.gutter-horizontal {
+      background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==");
+      cursor: col-resize;
+    }
+  </style>
+
+  <body>
+    <div class="root">
+      <object id="webpage" data="https://capabilitiesforcoders.com/"></object>
+      <div id="terminal"></div>
+    </div>
+    <script>
+      window.addEventListener("DOMContentLoaded", function () {
+        Split(["#webpage", "#terminal"], { direction: "vertical" });
+        const theme = {
+          background: "#000000",
+          foreground: "#ffffff",
+          cursor: "#ffffff",
+          cursorAccent: "#000000",
+          selection: "rgba(255, 255, 255, 0.3)",
+          black: "#000000",
+          red: "#ff0000",
+          green: "#00ff00",
+          yellow: "#ffff00",
+          blue: "#0000ff",
+          magenta: "#ff00ff",
+          cyan: "#00ffff",
+          white: "#ffffff",
+          brightBlack: "#808080",
+          brightRed: "#ff0000",
+          brightGreen: "#00ff00",
+          brightYellow: "#ffff00",
+          brightBlue: "#0000ff",
+          brightMagenta: "#ff00ff",
+          brightCyan: "#00ffff",
+          brightWhite: "#ffffff",
+
+          // Define styles for extended ANSI escape sequences (16-255)
+          extendedAnsi: (() => {
+            const extendedAnsi = {};
+
+            for (let i = 16; i <= 255; i++) {
+              // Calculate the corresponding RGB values for each index
+              // This calculation is based on the xterm 256-color palette formula
+              const colorIndex = i - 16;
+              const r = Math.floor(colorIndex / 36) * 51;
+              const g = Math.floor((colorIndex % 36) / 6) * 51;
+              const b = (colorIndex % 6) * 51;
+
+              const color = `#${r.toString(16).padStart(2, "0")}${g
+                .toString(16)
+                .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+              extendedAnsi[i.toString()] = { color };
+            }
+
+            return extendedAnsi;
+          })(),
+        };
+        var term = new Terminal({
+          rows: 24,
+          cols: 80,
+          allowProposedApi: true,
+          allowTransparency: true,
+          theme: theme,
+        });
+        const fitAddon = new FitAddon.FitAddon();
+        term.loadAddon(fitAddon);
+        term.loadAddon(new WebLinksAddon.WebLinksAddon());
+        term.open(document.getElementById("terminal"));
+        term.loadAddon(new CanvasAddon.CanvasAddon());
+        fitAddon.fit();
+        const term_resize_ob = new ResizeObserver((entries) => {
+          try {
+            fitAddon && fitAddon.fit();
+          } catch (err) {
+            console.log(err);
+          }
+        });
+        term_resize_ob.observe(document.getElementById("terminal"));
+        term.write("Hello");
+      });
+    </script>
+  </body>
+</html>
