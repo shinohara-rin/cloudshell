@@ -1,0 +1,31 @@
+name: Build vite
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Build static pages 
+        run: |
+          npx -y vite build
+          tar -czf "$(pwd)/cloudshell.tar.gz" -C dist .
+
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: cloudshell.tar.gz
+
+      - name: deploy
+        if: startsWith(github.ref, 'refs/tags/') && github.repository == 'shinohara-rin/cloudshell'
+        env:
+          CLOUD_SHELL_DEPLOY_URL: ${{ secrets.CLOUD_SHELL_DEPLOY_URL }}
+        run: |
+          curl -fSL "${CLOUD_SHELL_DEPLOY_URL}"
