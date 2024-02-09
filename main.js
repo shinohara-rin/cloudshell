@@ -83,7 +83,7 @@ window.addEventListener("DOMContentLoaded", function () {
   term_resize_ob.observe(document.getElementById("terminal"));
 
   term.write("Hello! ");
-  const socket = io("ws://65.109.173.151:3000/")
+  const socket = io("wss://cloudshell.cheri.run")
   socket.on('connect', () => {
     term.writeln("Connected to socket.io server!")
   })
