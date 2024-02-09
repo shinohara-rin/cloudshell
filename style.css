@@ -4,7 +4,7 @@ html {
 .root {
   width: 100%;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   height: 100vh;
   background-color: black;
 }
@@ -15,10 +15,10 @@ html {
 }
 
 #reconnect {
-  float: right;
-  position: relative;
-  top: -20px;
-  right: 15px;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  z-index: 99;
 }
 .gutter {
   background-color: #aaa;

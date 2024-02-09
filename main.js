@@ -52,7 +52,7 @@ const theme = {
 }
 
 window.addEventListener("DOMContentLoaded", function () {
-  Split(["#webpage", "#terminal"], { direction: "vertical" });
+  Split(["#webpage", "#terminal"]);
   var term = new Terminal({
     rows: 24,
     cols: 80,
