@@ -73,10 +73,31 @@ window.addEventListener("DOMContentLoaded", function () {
     }
   });
   term_resize_ob.observe(document.getElementById("terminal"));
-  term.write("Hello");
+  term.write("Hello! ");
   const socket = io("ws://65.109.173.151:3000/")
   socket.on('connect', () => {
-    term.write("Connected to socket.io server!")
+    term.writeln("Connected to socket.io server!")
   })
   socket.connect()
+  term.onData((data) => {
+    socket.emit('data', data)
+  })
+  socket.on('data', (data) => {
+    term.write(data)
+  })
+  socket.on('exit',(evt)=>{
+    term.write("Process exited with code " + evt.exitCode)
+    socket.disconnect()
+  })
+  term.onResize((evt) => {
+    socket.emit('resize', {
+      cols: evt.cols,
+      rows: evt.rows
+    })
+  })
+  this.document.getElementById('reconnect').addEventListener('click', () => {
+    socket.disconnect()
+    term.reset()
+    socket.connect()
+  })
 });
