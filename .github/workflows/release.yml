@@ -16,6 +16,8 @@ jobs:
 
       - name: Build static pages 
         run: |
+          npm install -g yarn
+          yarn
           npx -y vite build
           tar -czf "$(pwd)/cloudshell.tar.gz" -C dist .
 
