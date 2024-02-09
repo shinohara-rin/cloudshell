@@ -83,12 +83,23 @@ window.addEventListener("DOMContentLoaded", function () {
   term_resize_ob.observe(document.getElementById("terminal"));
 
   const socket = io("wss://cloudshell.cheri.run")
+  term.write('connecting to server...')
+  const connectingHint = setInterval(() => {
+    if (socket.connected) {
+      clearInterval(connectingHint)
+      return
+    }
+    term.write('.')
+  }, 1000);
   socket.on('connect', () => {
     term.writeln("Connected to socket.io server!")
   })
   socket.connect()
   term.onData((data) => {
     socket.emit('data', data)
+  })
+  socket.on('not-ready', () => {
+    term.writeln("The host server is still starting. Please try again later.")
   })
   socket.on('data', (data) => {
     term.write(data)
