@@ -135,6 +135,7 @@ window.addEventListener("DOMContentLoaded", function () {
 
   elem.addEventListener('drop', (e) => {
     e.preventDefault()
+    elem.classList.remove('dropzone-active')
     const file = e.dataTransfer.files[0]
     const fileName = file.name
     console.log('dropped file', fileName)
