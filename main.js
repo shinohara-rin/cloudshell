@@ -52,6 +52,7 @@ const theme = {
 }
 
 window.addEventListener("DOMContentLoaded", function () {
+  const uploadSpinner = this.document.getElementById('spinner')
   Split(["#webpage", "#terminal"]);
   var term = new Terminal({
     rows: 24,
@@ -114,4 +115,46 @@ window.addEventListener("DOMContentLoaded", function () {
       rows: evt.rows
     })
   })
+
+  // set up drag to upload
+  const elem = document.getElementById("terminal")
+  elem.addEventListener('dragenter', (e) => {
+    if (!elem.classList.contains('dropzone-active'))
+      elem.classList.add('dropzone-active')
+  })
+
+  elem.addEventListener('dragleave', (e) => {
+    e.preventDefault()
+    if (elem.classList.contains('dropzone-active'))
+      elem.classList.remove('dropzone-active')
+  })
+
+  elem.addEventListener('dragover', (e) => {
+    e.preventDefault()
+  })
+
+  elem.addEventListener('drop', (e) => {
+    e.preventDefault()
+    const file = e.dataTransfer.files[0]
+    const fileName = file.name
+    console.log('dropped file', fileName)
+    if (file.size > 5 * 1024 * 1024) {
+      this.alert("File too large. Max upload size is 5MB, your file is " + (file.size / 1024 / 1024).toFixed(2) + "MB")
+      return
+    }
+    uploadSpinner.style.visibility = 'visible'
+    socket.emit('upload', { file, fileName: file.name }, (result) => {
+      uploadSpinner.style.visibility = 'hidden'
+      console.log("upload result", result)
+      if (result == 0) {
+        this.alert(`${fileName} was uploaded to your home directory`)
+      } else {
+        if (result.err) {
+          this.alert(result.err)
+        }
+      }
+    })
+    console.log('uploading', fileName)
+  })
+
 });
