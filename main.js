@@ -67,8 +67,10 @@ window.addEventListener("DOMContentLoaded", function () {
   term.open(document.getElementById("terminal"));
   term.loadAddon(new CanvasAddon());
   fitAddon.fit();
+  let sizeUpdated = false
 
   this.document.getElementById('reconnect').addEventListener('click', () => {
+    sizeUpdated = false
     socket.disconnect()
     term.reset()
     socket.connect()
@@ -103,10 +105,18 @@ window.addEventListener("DOMContentLoaded", function () {
     term.writeln("The host server is still starting. Please try again later.")
   })
   socket.on('data', (data) => {
+    if (!sizeUpdated) {
+      socket.emit('resize', {
+        cols: term.cols,
+        rows: term.rows
+      })
+      sizeUpdated = true
+    }
     term.write(data)
   })
   socket.on('exit', (evt) => {
     term.write("Process exited with code " + evt.exitCode)
+    sizeUpdated = false
     socket.disconnect()
   })
   term.onResize((evt) => {
