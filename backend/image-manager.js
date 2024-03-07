@@ -1,8 +1,9 @@
 import axios from 'axios'
-import { existsSync, renameSync, writeFileSync } from 'fs'
+import { existsSync, renameSync } from 'fs'
 import { spawnSync } from 'child_process'
 import process from 'process'
 import { writeFile } from 'fs/promises'
+import qemuWrapper from './qemu-wrapper.js'
 
 const cheribuild_repo = "cocoa-xu/cheribuild"
 const cheribuild_repo_url = `https://github.com/${cheribuild_repo}`
@@ -140,8 +141,34 @@ const unarchive_qemu = async (latestTag, filename) => {
     }
 }
 
-const setup_image_file = async (filename) => {
+const setup_image_file = async (imageFilename, qemuRootdir) => {
+    // Spawn qemu with the image file
+    const qemuProcess = qemuWrapper(`${qemuRootdir}/bin/qemu-system-morello`, [
+        '-M', 'virt,gic-version=3',
+        '-cpu', 'morello',
+        '-smp', `${cpus().length}`,
+        '-bios', 'edk2-aarch64-code.fd',
+        '-m', '512M',
+        '-nographic',
+        '-drive', `if=none,file=${imageFilename},id=drv,format=raw`,
+        '-device', 'virtio-blk-pci,drive=drv',
+        '-device', 'virtio-net-pci,netdev=net0',
+        '-netdev', 'user,id=net0,hostfwd=tcp:127.0.0.1:2223-:22',
+        '-device', 'virtio-rng-pci'
+    ], () => {
+        // Copy setup script via scp
+        spawnSync('scp', [
+            'setupcloudshell.sh',
+            'imagesetup:/etc/rc.d/setupcloudshell.sh',
+        ])
+        // Execute setup script via ssh
+        spawnSync('ssh', [
+            'imagesetup',
+            'sh /etc/rc.d/setupcloudshell.sh',
+        ])
 
+        qemuProcess.kill()
+    })
 }
 
 const updateImage = async () => {

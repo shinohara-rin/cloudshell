@@ -1,3 +1,5 @@
+import { spawn } from 'child_process'
+
 export default function qemuWrapper(qemuCmd, qemuArgs, readyCb) {
     console.log('starting qemu process with command: ' + qemuCmd + ' ' + qemuArgs.join(' '));
     const qemuProcess = spawn(qemuCmd, qemuArgs);
@@ -20,4 +22,6 @@ export default function qemuWrapper(qemuCmd, qemuArgs, readyCb) {
     qemuProcess.on('close', (code) => {
         console.log(`qemu exited with code ${code}`);
     });
+
+    return qemuProcess
 }
