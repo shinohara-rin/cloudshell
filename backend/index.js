@@ -1,11 +1,11 @@
 import express from 'express';
-import { existsSync, mkdirSync, rm } from 'fs'
+import { writeFile, existsSync, mkdirSync, rm } from 'fs'
 import { cpus } from 'node:os';
 import { createServer } from 'node:http';
 import { Server } from 'socket.io'
 import pty from "node-pty"
 import { spawn } from 'node:child_process';
-import { writeFile } from 'node:fs';
+import qemuWrapper from '../qemu-wrapper';
 
 const app = express();
 const server = createServer(app);
@@ -79,6 +79,7 @@ io.on('connection', (s) => {
     })
 })
 
+// spawn qemu
 const qemuCmd = '/usr/local/bin/qemu-system-morello';
 const qemuArgs = [
     '-M', 'virt,gic-version=3',
@@ -94,25 +95,6 @@ const qemuArgs = [
     '-device', 'virtio-rng-pci'
 ];
 
-console.log('starting qemu process with command: ' + qemuCmd + ' ' + qemuArgs.join(' '));
-const qemuProcess = spawn(qemuCmd, qemuArgs);
-
-const waitForLogin = (() => {
-    let concat = ''
-    return (data) => {
-        concat += data.toString()
-        if (concat.includes('login')) {
-            return true
-        }
-        return false
-    }
-})()
-
-qemuProcess.stdout.on('data', (data) => {
-    qemuReady = waitForLogin(data)
-    qemuReady && console.log('qemu ready for connection')
-});
-
-qemuProcess.on('close', (code) => {
-    console.log(`qemu exited with code ${code}`);
-});
+qemuWrapper(qemuCmd, qemuArgs, () => {
+    qemuReady = true
+})
