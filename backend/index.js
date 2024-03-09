@@ -86,7 +86,7 @@ const qemuArgs = [
     '-cpu', 'morello',
     '-smp', `${cpus().length}`,
     '-bios', 'edk2-aarch64-code.fd',
-    '-m', process.env.MEMORY || '12G',
+    '-m', process.env.MEMORY || '24G',
     '-nographic',
     '-drive', 'if=none,file=/home/cheri/cheribsd-morello-purecap.img,id=drv,format=raw',
     '-device', 'virtio-blk-pci,drive=drv',
