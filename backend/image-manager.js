@@ -1,8 +1,10 @@
 import axios from 'axios'
-import { existsSync, renameSync, writeFileSync } from 'fs'
-import { spawnSync } from 'child_process'
+import { existsSync, renameSync } from 'fs'
+import { spawn, spawnSync } from 'child_process'
 import process from 'process'
 import { writeFile } from 'fs/promises'
+import qemuWrapper from './qemu-wrapper.js'
+import { resolve } from 'path'
 
 const cheribuild_repo = "cocoa-xu/cheribuild"
 const cheribuild_repo_url = `https://github.com/${cheribuild_repo}`
@@ -31,15 +33,17 @@ const get_latest_tag = async () => {
 }
 
 const download_from_release = async (latestTag, release_filename, cache_filename) => {
+
     if (existsSync(cache_filename)) {
         console.log(`[-] ${cache_filename} already exists, skipping download`);
         return [true, cache_filename]
     }
-
+    console.log(`[+] Downloading ${release_filename} to ${cache_filename}`)
     const url = `${cheribuild_download_baseurl}/${latestTag}/${release_filename}`
     try {
         let response = await axios.get(url, { responseType: 'arraybuffer' })
         if (response.status == 200) {
+            console.log(`[+] Downloaded ${release_filename} to ${cache_filename}`)
             await writeFile(cache_filename, response.data)
             return [true, cache_filename]
         }
@@ -107,17 +111,16 @@ const unarchive_image = async (filename) => {
             console.log(`[-] ${image_filename} already exists, skipping unarchive`)
             return [true, image_filename]
         }
-        const unarchive = spawn("xz", ["-d", "-k", filename])
-        unarchive.on('close', (code) => {
-            if (code == 0) {
-                console.log(`[+] Unarchived ${filename}`)
-                renameSync(cheribuild_release_purecap_image_filename, image_filename)
-                return [true, image_filename]
-            } else {
-                console.log(`[!] Failed to unarchive ${filename}`)
-                return [false, null]
-            }
-        })
+        console.log(`[+] Unarchiving ${filename}`)
+        const { status, stderr } = spawnSync("xz", ["-d", "-k", filename])
+        if (status != 0) {
+            console.log(`[!] Failed to unarchive ${filename}: ${stderr}`)
+            return [false, null]
+        } else {
+            console.log(`[+] Unarchived ${filename}`)
+            renameSync("sdk", qemu_rootdir)
+            return [true, qemu_rootdir]
+        }
     }
 }
 
@@ -128,6 +131,7 @@ const unarchive_qemu = async (latestTag, filename) => {
             console.log(`[-] ${qemu_rootdir} already exists, skipping unarchive`)
             return [true, qemu_rootdir]
         }
+        console.log(`[+] Unarchiving ${filename}`)
         const {status, stderr} = spawnSync("tar", ["-xf", filename])
         if (status != 0) {
             console.log(`[!] Failed to unarchive ${filename}: ${stderr}`)
@@ -140,13 +144,51 @@ const unarchive_qemu = async (latestTag, filename) => {
     }
 }
 
-const setup_image_file = async (filename) => {
-
+const setup_image_file = async (imageFilename, qemuRootdir) => {
+    const setup = () => {
+        console.log("[+] Copying setup script")
+        spawnSync('scp', [
+            '-o StrictHostKeyChecking=no',
+            '-q',
+            'setupcloudshell.sh',
+            'imagesetup:/etc/rc.d/setupcloudshell.sh',
+        ])
+        // Execute setup script via ssh
+        console.log("[+] Executing setup script")
+        spawnSync('ssh', [
+            '-o',
+            'StrictHostKeyChecking=no',
+            'imagesetup',
+            'sh /etc/rc.d/setupcloudshell.sh',
+        ], { stdio: ['ignore', 1, 2] })
+    }
+    // Spawn qemu with the image file
+    if (process.env.NODE_ENV !== 'production') {
+        // Skip qemu in dev mode, assume qemu is already running
+        setup()
+    } else {
+        console.log(`[+] Spawning qemu with ${imageFilename}`)
+        const qemuProcess = qemuWrapper(`${resolve(qemuRootdir)}/bin/qemu-system-morello`, [
+            '-M', 'virt,gic-version=3',
+            '-cpu', 'morello',
+            '-smp', '4',
+            '-bios', 'edk2-aarch64-code.fd',
+            '-m', '512M',
+            '-nographic',
+            '-drive', `if=none,file=${resolve(imageFilename)},id=drv,format=raw`,
+            '-device', 'virtio-blk-pci,drive=drv',
+            '-device', 'virtio-net-pci,netdev=net0',
+            '-netdev', 'user,id=net0,hostfwd=tcp:127.0.0.1:2223-:22',
+            '-device', 'virtio-rng-pci'
+        ], setup)
+    }
 }
 
 const updateImage = async () => {
+    console.log("[+] Updating image")
     const latestTag = await get_latest_tag()
 
+    console.log(`[+] Latest tag: ${latestTag}`)
     let [downloaded, cache_filename] = await download_image(latestTag)
     if (!downloaded) return
 
@@ -158,6 +200,8 @@ const updateImage = async () => {
 
     let [unarchived_qemu, qemu_rootdir] = await unarchive_qemu(latestTag, cache_filename)
     if (!unarchived_qemu) return
+
+    setup_image_file(image_filename, qemu_rootdir)
 }
 
 await updateImage()
