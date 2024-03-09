@@ -30,8 +30,8 @@ io.on('connection', (s) => {
     const tempHome = Math.random().toString(36).slice(2, 10)
     if (!qemuReady) {
         s.emit('not-ready')
-        // s.disconnect()
-        // return
+        s.disconnect()
+        return
     }
     const term = pty.spawn('ssh', ['-t', 'cloudshell', `TEMP_HOME=/tmp/${tempHome} bash`])
     s.on('data', (data) => {
