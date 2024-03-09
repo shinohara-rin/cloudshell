@@ -5,7 +5,7 @@ import { createServer } from 'node:http';
 import { Server } from 'socket.io'
 import pty from "node-pty"
 import { spawn } from 'node:child_process';
-import qemuWrapper from '../qemu-wrapper';
+import qemuWrapper from './qemu-wrapper.js';
 
 const app = express();
 const server = createServer(app);
