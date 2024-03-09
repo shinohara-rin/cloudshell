@@ -33,7 +33,7 @@ io.on('connection', (s) => {
         // s.disconnect()
         // return
     }
-    const term = pty.spawn('ssh', ['-t', 'cloudshell', `TEMP_HOME=${tempHome} bash`])
+    const term = pty.spawn('ssh', ['-t', 'cloudshell', `TEMP_HOME=/tmp/${tempHome} bash`])
     s.on('data', (data) => {
         term.write(data)
     })
