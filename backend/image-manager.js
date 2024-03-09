@@ -14,22 +14,21 @@ const cheribuild_release_purecap_image_filename = "cheribsd-morello-purecap.img"
 
 const get_latest_tag = async () => {
     if (process.env.NODE_ENV !== 'production') {
-        return "v2024.02.28-400ab789"
+        return [true, "v2024.02.28-400ab789"]
     }
 
-    axios.get(`https://api.github.com/repos/${cheribuild_repo}/git/refs/tags`)
-        .then((response) => {
-            if (response.status == 200) {
-                let tags = response.data
-                    .map(x => x.ref)
-                    .map(x => x.replace("refs/tags/", ""))
+    const response = await axios.get(`https://api.github.com/repos/${cheribuild_repo}/git/refs/tags`)
+    if (response.status == 200) {
+        let tags = response.data
+            .map(x => x.ref)
+            .map(x => x.replace("refs/tags/", ""))
+        let latestTag = tags[tags.length - 1]
+        return [true, latestTag]
+    } else {
+        console.log(`[!] Failed to get latest tag: ${response.status}`)
+        return [false, null]
+    }
 
-                let latestTag = tags[tags.length - 1]
-                return latestTag
-            }
-        }).catch((error) => {
-            console.log(error)
-        })
 }
 
 const download_from_release = async (latestTag, release_filename, cache_filename) => {
@@ -187,8 +186,8 @@ const setup_image_file = async (imageFilename, qemuRootdir) => {
 
 const updateImage = async () => {
     console.log("[+] Updating image")
-    const latestTag = await get_latest_tag()
-
+    const [detected, latestTag] = await get_latest_tag()
+    if (!detected) return
     console.log(`[+] Latest tag: ${latestTag}`)
     let [downloaded, cache_filename] = await download_image(latestTag)
     if (!downloaded) return
