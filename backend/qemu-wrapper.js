@@ -9,7 +9,7 @@ export default function qemuWrapper(qemuCmd, qemuArgs, readyCb) {
         return (data) => {
             concat += data.toString()
             if (concat.includes('login')) {
-                readyCb()
+                readyCb(qemuProcess)
                 waitForLogin = () => { }
             }
         }

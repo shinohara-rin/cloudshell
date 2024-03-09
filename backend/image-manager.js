@@ -145,7 +145,7 @@ const unarchive_qemu = async (latestTag, filename) => {
 }
 
 const setup_image_file = async (imageFilename, qemuRootdir) => {
-    const setup = () => {
+    const setup = (proc) => {
         console.log("[+] Copying setup script")
         spawnSync('scp', [
             '-o StrictHostKeyChecking=no',
@@ -161,6 +161,9 @@ const setup_image_file = async (imageFilename, qemuRootdir) => {
             'imagesetup',
             'sh /etc/rc.d/setupcloudshell.sh',
         ], { stdio: ['ignore', 1, 2] })
+        if (proc) {
+            proc.kill()
+        }
     }
     // Spawn qemu with the image file
     if (process.env.NODE_ENV !== 'production') {
