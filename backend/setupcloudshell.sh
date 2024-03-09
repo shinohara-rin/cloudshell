@@ -7,7 +7,7 @@ pkg64c install -y bash tmux curl wget zip unzip git
 
 # Create cloudshell user if it doesn't exist
 if ! pw usershow cloudshell >/dev/null 2>&1; then
-    mkdir /home/cloudshell
+    mkdir -p /home/cloudshell
     pw user add -n cloudshell -c "Cloud Shell User" -d /home/cloudshell -m -s /usr/local/bin/bash
     chown -R cloudshell /home/cloudshell
 fi
