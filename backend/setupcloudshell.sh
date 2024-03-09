@@ -28,6 +28,3 @@ cd \$TEMP_HOME
 export HOME=\$TEMP_HOME
 EOF
 chmod a+x ~cloudshell/.bashrc
-
-# Make self executable for rc
-chmod +x /etc/rc.d/setupcloudshell.sh

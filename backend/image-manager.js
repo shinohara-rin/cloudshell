@@ -151,7 +151,7 @@ const setup_image_file = async (imageFilename, qemuRootdir) => {
             '-o StrictHostKeyChecking=no',
             '-q',
             'setupcloudshell.sh',
-            'imagesetup:/etc/rc.d/setupcloudshell.sh',
+            'imagesetup:/etc/rc.local',
         ])
         // Execute setup script via ssh
         console.log("[+] Executing setup script")
@@ -159,7 +159,7 @@ const setup_image_file = async (imageFilename, qemuRootdir) => {
             '-o',
             'StrictHostKeyChecking=no',
             'imagesetup',
-            'sh /etc/rc.d/setupcloudshell.sh',
+            'chmod +x /etc/rc.local; /etc/rc.local',
         ], { stdio: ['ignore', 1, 2] })
         if (proc) {
             proc.kill()
