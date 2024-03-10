@@ -29,4 +29,9 @@ export HOME=\$TEMP_HOME
 EOF
 chmod a+x ~cloudshell/.bashrc
 
-ln -s /usr/local64/bin/clang-morello /usr/local64/bin/cc
+cat <<EOF > /usr/local64/bin/cc
+#!/usr/local/bin/bash
+
+clang-morello -march=morello -mabi=purecap "$@"
+EOF
+chmod a+x /usr/local64/bin/cc
