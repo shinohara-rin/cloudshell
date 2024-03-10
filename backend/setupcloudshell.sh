@@ -28,3 +28,5 @@ cd \$TEMP_HOME
 export HOME=\$TEMP_HOME
 EOF
 chmod a+x ~cloudshell/.bashrc
+
+ln -s /usr/local64/bin/clang-morello /usr/local64/bin/cc
