@@ -37,6 +37,10 @@ body{
   border-radius: 0;
 }
 
+#reconnect:active {
+  background-color:red;
+}
+
 #feedback {
   border-radius: 0;
   background-color:#66db34;
