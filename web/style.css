@@ -1,6 +1,11 @@
 html {
   overflow: hidden;
 }
+
+body{
+  margin: 0;
+}
+
 .root {
   width: 100%;
   display: flex;
@@ -10,6 +15,7 @@ html {
 }
 
 #terminal {
+  position: relative;
   margin-bottom: 1em;
   width: 100vw;
 }
@@ -19,7 +25,17 @@ html {
   top: 0px;
   right: 0px;
   z-index: 99;
+  border-radius: 0;
+  background-color:#3498db;
+  color: white;
+  border: #3498db solid 2px;
+  border-radius: 0;
 }
+
+.xterm-viewport {
+  overflow: hidden !important;
+}
+
 .gutter {
   background-color: #aaa;
   background-repeat: no-repeat;
