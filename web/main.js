@@ -82,6 +82,9 @@ window.addEventListener("DOMContentLoaded", function () {
     term.reset()
     socket.connect()
   })
+  this.document.getElementById('feedback').addEventListener('click', () => {
+    // TODO
+  })
 
   const term_resize_ob = new ResizeObserver((entries) => {
     try {
