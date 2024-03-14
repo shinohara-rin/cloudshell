@@ -52,11 +52,20 @@ body{
   border: #aaa dashed;
 }
 
-#spinner {
-  position: absolute;
+#uploading {
   visibility: hidden;
-  bottom: 0;
-  right: 30px;
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  z-index: 99;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#spinner {
   color: white;
   border: 6px solid #f3f3f3; /* Light grey */
   border-top: 6px solid #3498db; /* Blue */

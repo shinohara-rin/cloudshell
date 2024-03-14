@@ -51,8 +51,15 @@ const theme = {
   })(),
 }
 
+function showUpload() {
+  document.getElementById('uploading').style.visibility = 'visible'
+}
+
+function hideUpload() {
+  document.getElementById('uploading').style.visibility = 'hidden'
+}
+
 window.addEventListener("DOMContentLoaded", function () {
-  const uploadSpinner = this.document.getElementById('spinner')
   Split(["#webpage", "#terminal"]);
   var term = new Terminal({
     rows: 24,
@@ -153,9 +160,9 @@ window.addEventListener("DOMContentLoaded", function () {
       this.alert("File too large. Max upload size is 5MB, your file is " + (file.size / 1024 / 1024).toFixed(2) + "MB")
       return
     }
-    uploadSpinner.style.visibility = 'visible'
+    showUpload()
     socket.emit('upload', { file, fileName: file.name }, (result) => {
-      uploadSpinner.style.visibility = 'hidden'
+      hideUpload()
       console.log("upload result", result)
       if (result == 0) {
         this.alert(`${fileName} was uploaded to your home directory`)
