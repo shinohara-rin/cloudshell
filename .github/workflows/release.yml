@@ -26,7 +26,7 @@ jobs:
 
       - uses: softprops/action-gh-release@v1
         with:
-          files: cloudshell.tar.gz
+          files: web/cloudshell.tar.gz
 
       - name: deploy
         if: startsWith(github.ref, 'refs/tags/') && github.repository == 'shinohara-rin/cloudshell'
