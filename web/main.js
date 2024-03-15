@@ -86,7 +86,8 @@ window.addEventListener("DOMContentLoaded", function () {
     socket.connect()
   })
   this.document.getElementById('feedback').addEventListener('click', () => {
-    // TODO
+    this.open("https://github.com/cocoa-xu/cherirun/issues/new?assignees=cocoa-xu&labels=pkg&projects=&template=package-installation-request.md&title=%5Bpkg%5D+package+installation+request",
+      '_blank');
   })
 
   const term_resize_ob = new ResizeObserver((entries) => {
