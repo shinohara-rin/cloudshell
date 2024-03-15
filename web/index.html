@@ -2,9 +2,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="node_modules/xterm/css/xterm.css">
-    <link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0" />
+    <link rel="stylesheet" href="node_modules/xterm/css/xterm.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0"
+    />
     <title>CheriBSD Cloudshell</title>
   </head>
 
@@ -12,16 +14,17 @@
     <div class="root">
       <object id="webpage" data="https://capabilitiesforcoders.com/"></object>
       <div id="terminal">
+        <div class="popup hidden">
+          <button class="closebtn hidden">[X]</button>
+          <span>Missing command <code id="missing-command">foobar</code>?</span> 
+          <span>Click the feedback button or <a style="color: antiquewhite;" href="https://example.com" target="_blank">Here</a> to reach us!</span>
+        </div>
         <div class="toolbar">
           <button id="reconnect" title="Reconnect">
-            <span class="material-symbols-outlined">
-              refresh
-            </span>
+            <span class="material-symbols-outlined"> refresh </span>
           </button>
           <button id="feedback" title="Feedback">
-            <span class="material-symbols-outlined">
-              comment
-            </span>
+            <span class="material-symbols-outlined"> comment </span>
           </button>
         </div>
       </div>
@@ -29,7 +32,7 @@
         <div>Uploading</div>
         <div id="spinner"></div>
       </div>
-    <script type="module" src="main.js"></script>
+      <script type="module" src="main.js"></script>
     </div>
   </body>
 </html>

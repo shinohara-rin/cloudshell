@@ -6,6 +6,8 @@ import { FitAddon } from "xterm-addon-fit";
 import { io } from "socket.io-client"
 import Split from "split.js";
 
+let c;
+
 const theme = {
   background: "#000000",
   foreground: "#ffffff",
@@ -60,6 +62,7 @@ function hideUpload() {
 }
 
 window.addEventListener("DOMContentLoaded", function () {
+  this.document.getElementsByClassName('closebtn')[0].addEventListener('click', hidePopup);
   Split(["#webpage", "#terminal"]);
   var term = new Terminal({
     rows: 24,
@@ -122,6 +125,7 @@ window.addEventListener("DOMContentLoaded", function () {
       })
       sizeUpdated = true
     }
+    checkForMissingCommand(data.toString())
     term.write(data)
   })
   socket.on('exit', (evt) => {
@@ -179,3 +183,32 @@ window.addEventListener("DOMContentLoaded", function () {
   })
 
 });
+
+function checkForMissingCommand(str){
+  if(localStorage.getItem('noPopup')){
+    return
+  }
+  let r = /bash:(.*?): command not found/
+  let match = str.match(r)
+  if(match){
+    console.log(match[1])
+    // show popup
+    document.getElementById('missing-command').innerText = match[1]
+    let popup = document.getElementsByClassName('popup')[0]
+    popup.classList.add('visible')
+    popup.classList.remove('hidden')
+
+    setTimeout(() => {
+      let popup = document.getElementsByClassName('popup')[0]
+      popup.classList.add('hidden')
+      popup.classList.remove('visible')
+    }, 5000);
+  }
+}
+
+function hidePopup(){
+  let popup = document.getElementsByClassName('popup')[0]
+  popup.classList.add('hidden')
+  popup.classList.remove('visible')
+  localStorage.setItem('noPopup', true)
+}
