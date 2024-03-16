@@ -1,5 +1,5 @@
 import express from 'express';
-import { writeFile, existsSync, mkdirSync, rm } from 'fs'
+import { writeFile, existsSync, mkdirSync, rm, readFileSync } from 'fs'
 import { cpus } from 'node:os';
 import { createServer } from 'node:http';
 import { Server } from 'socket.io'
@@ -11,8 +11,8 @@ const app = express();
 const server = createServer(app);
 let qemuReady = false
 
-server.listen(3000, '0.0.0.0', () => {
-    console.log('server running at http://localhost:3000');
+server.listen(3001, '0.0.0.0', () => {
+    console.log('server running at http://localhost:3001');
 });
 
 app.get('/', (req, res) => {
@@ -79,8 +79,16 @@ io.on('connection', (s) => {
     })
 })
 
-// spawn qemu
-const qemuCmd = '/usr/local/bin/qemu-system-morello';
+// read qemuRoot from chericonfig.json
+
+const configPath = 'chericonfig.json';
+if (!existsSync(configPath)) {
+    console.error(`Config file ${configPath} does not exist.`);
+    process.exit(1);
+}
+let config = JSON.parse(readFileSync(configPath, 'utf8'));
+
+const qemuCmd = `${config.qemu}/bin/qemu-system-morello`;
 const qemuArgs = [
     '-M', 'virt,gic-version=3',
     '-cpu', 'morello',
@@ -88,13 +96,19 @@ const qemuArgs = [
     '-bios', 'edk2-aarch64-code.fd',
     '-m', process.env.MEMORY || '24G',
     '-nographic',
-    '-drive', 'if=none,file=/home/cheri/cheribsd-morello-purecap.img,id=drv,format=raw',
+    '-drive', `if=none,file=${config.image},id=drv,format=raw`,
     '-device', 'virtio-blk-pci,drive=drv',
     '-device', 'virtio-net-pci,netdev=net0',
     '-netdev', 'user,id=net0,hostfwd=tcp:127.0.0.1:2222-:22',
     '-device', 'virtio-rng-pci'
 ];
 
-qemuWrapper(qemuCmd, qemuArgs, () => {
+function startQemu() {
+    qemuWrapper(qemuCmd, qemuArgs, () => {
     qemuReady = true
-})
+    }, (code) => {
+        console.log('qemu exited with code', code, "restarting...")
+        qemuReady = false
+        setImmediate(startQemu)
+    })
+}

@@ -187,6 +187,18 @@ const setup_image_file = async (imageFilename, qemuRootdir) => {
     }
 }
 
+function update_chericonfig(image_filename, qemu_rootdir) {
+    let config = {
+        "image": resolve(image_filename),
+        "qemu": resolve(qemu_rootdir)
+    }
+    writeFile("chericonfig.json", JSON.stringify(config), (err) => {
+        if (err) {
+            console.log(`[!] Failed to write chericonfig.json: ${err}`)
+        }
+    })
+}
+
 const updateImage = async () => {
     console.log("[+] Updating image")
     const [detected, latestTag] = await get_latest_tag()
@@ -205,6 +217,8 @@ const updateImage = async () => {
     if (!unarchived_qemu) return
 
     setup_image_file(image_filename, qemu_rootdir)
+
+    update_chericonfig(image_filename, qemu_rootdir)
 }
 
 await updateImage()
