@@ -112,3 +112,5 @@ function startQemu() {
         setImmediate(startQemu)
     })
 }
+
+startQemu()
