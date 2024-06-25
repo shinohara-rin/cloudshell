@@ -110,17 +110,15 @@ const unarchive_image = async (filename) => {
             console.log(`[-] ${image_filename} already exists, skipping unarchive`)
             return [true, image_filename]
         }
-        const unarchive = spawn("xz", ["-d", "-k", filename])
-        unarchive.on('close', (code) => {
-            if (code == 0) {
-                console.log(`[+] Unarchived ${filename}`)
-                renameSync(cheribuild_release_purecap_image_filename, image_filename)
-                return [true, image_filename]
-            } else {
-                console.log(`[!] Failed to unarchive ${filename}`)
+        const {status, stderr} = spawnSync("xz", ["-d", "-k", filename])
+        if (status == 0) {
+            console.log(`[+] Unarchived ${filename}`)
+            renameSync(cheribuild_release_purecap_image_filename, image_filename)
+            return [true, image_filename]
+        } else {
+            console.log(`[!] Failed to unarchive ${filename}`)
             return [false, null]
         }
-        })
     }
 }
 
