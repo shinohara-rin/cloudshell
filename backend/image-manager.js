@@ -181,7 +181,9 @@ const setup_image_file = async (imageFilename, qemuRootdir) => {
             '-device', 'virtio-net-pci,netdev=net0',
             '-netdev', 'user,id=net0,hostfwd=tcp:127.0.0.1:2223-:22',
             '-device', 'virtio-rng-pci'
-        ], setup)
+        ], setup, (code) => {
+            console.log(`[!] qemu exited with code ${code}`)
+        })
     }
 }
 
