@@ -32,6 +32,6 @@ chmod a+x ~cloudshell/.bashrc
 cat <<EOF > /usr/local64/bin/cc
 #!/usr/local/bin/bash
 
-clang-morello -march=morello -mabi=purecap "$@"
+clang-morello -march=morello -mabi=purecap "\$@"
 EOF
 chmod a+x /usr/local64/bin/cc

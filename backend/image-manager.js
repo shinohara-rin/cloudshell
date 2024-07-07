@@ -10,7 +10,6 @@ const cheribuild_repo = "cocoa-xu/cheribuild"
 const cheribuild_repo_url = `https://github.com/${cheribuild_repo}`
 const cheribuild_download_baseurl = `${cheribuild_repo_url}/releases/download`
 const cheribuild_release_purecap_image_xz_filename = "cheribsd-morello-purecap.img.xz"
-const cheribuild_release_purecap_image_filename = "cheribsd-morello-purecap.img"
 
 const get_latest_tag = async () => {
     if (process.env.NODE_ENV !== 'production') {
@@ -113,7 +112,6 @@ const unarchive_image = async (filename) => {
         const {status, stderr} = spawnSync("xz", ["-d", "-k", filename])
         if (status == 0) {
             console.log(`[+] Unarchived ${filename}`)
-            renameSync(cheribuild_release_purecap_image_filename, image_filename)
             return [true, image_filename]
         } else {
             console.log(`[!] Failed to unarchive ${filename}`)
