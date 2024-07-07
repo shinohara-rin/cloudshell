@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { existsSync, renameSync } from 'fs'
+import { existsSync, readFileSync, renameSync } from 'fs'
 import { spawn, spawnSync } from 'child_process'
 import process from 'process'
 import { writeFile } from 'fs/promises'
@@ -189,11 +189,15 @@ const setup_image_file = async (imageFilename, qemuRootdir, identityFilePath) =>
 }
 
 function update_chericonfig(image_filename, qemu_rootdir) {
-    let config = {
-        "image": resolve(image_filename),
-        "qemu": resolve(qemu_rootdir)
+    let configFile
+    if (existsSync("chericonfig.json")) {
+        configFile = JSON.parse(readFileSync("chericonfig.json", "utf8"))
+    } else {
+        configFile = { qemuMemory: "2G" }
     }
-    writeFile("chericonfig.json", JSON.stringify(config), (err) => {
+    configFile.image = resolve(image_filename)
+    configFile.qemu = resolve(qemu_rootdir)
+    writeFile("chericonfig.json", JSON.stringify(config, null, 2), (err) => {
         if (err) {
             console.log(`[!] Failed to write chericonfig.json: ${err}`)
         }
