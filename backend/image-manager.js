@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { existsSync, readFileSync, renameSync } from 'fs'
+import { existsSync, fstatSync, readFileSync, renameSync } from 'fs'
 import { spawn, spawnSync } from 'child_process'
 import process from 'process'
 import { writeFile } from 'fs/promises'
@@ -31,7 +31,6 @@ const get_latest_tag = async () => {
 }
 
 const download_from_release = async (latestTag, release_filename, cache_filename) => {
-
     if (existsSync(cache_filename)) {
         console.log(`[-] ${cache_filename} already exists, skipping download`);
         return [true, cache_filename]
@@ -164,6 +163,17 @@ const setup_image_file = async (imageFilename, qemuRootdir, identityFilePath) =>
             proc.kill()
         }
     }
+
+    const stats = fstatSync(imageFilename)
+    if (stats.size < 1024 * 1024 * 1024 * 6) {
+        console.log(`[!] Image file ${imageFilename} is not resized yet(${stats.size} bytes)`)
+        const { status, stderr } = spawnSync(`${resolve(qemuRootdir)}/bin/qemu-img`, ['resize', '-f', 'raw', imageFilename, '+5G'], { stdio: ['ignore', 1, 2] })
+        if (status != 0) {
+            console.log(`[!] Failed to resize image file: ${stderr}`)
+            throw new Error(`Failed to resize image file: ${stderr}`)
+        }
+    }
+
     // Spawn qemu with the image file
     if (process.env.NODE_ENV !== 'production') {
         // Skip qemu in dev mode, assume qemu is already running
