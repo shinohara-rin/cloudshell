@@ -10,7 +10,6 @@ const cheribuild_repo = "cocoa-xu/cheribuild"
 const cheribuild_repo_url = `https://github.com/${cheribuild_repo}`
 const cheribuild_download_baseurl = `${cheribuild_repo_url}/releases/download`
 const cheribuild_release_purecap_image_xz_filename = "cheribsd-morello-purecap.img.xz"
-const cheribuild_release_purecap_image_filename = "cheribsd-morello-purecap.img"
 
 const get_latest_tag = async () => {
     if (process.env.NODE_ENV !== 'production') {
