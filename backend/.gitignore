@@ -132,3 +132,8 @@ dist
 test_utils
 
 chericonfig.json
+
+cheribsd*.img
+cheribsd*.img.xz
+qemu-*.tar.xz
+qemu-v*/
