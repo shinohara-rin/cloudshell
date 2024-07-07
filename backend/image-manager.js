@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { existsSync, openSync, closeSync, fstatSync, readFileSync, renameSync } from 'fs'
+import { existsSync, openSync, closeSync, fstatSync, readFileSync, renameSync, chmodSync } from 'fs'
 import { spawn, spawnSync } from 'child_process'
 import process from 'process'
 import { fileURLToPath } from 'url'
@@ -28,7 +28,6 @@ const get_latest_tag = async () => {
         console.log(`[!] Failed to get latest tag: ${response.status}`)
         return [false, null]
     }
-
 }
 
 const download_from_release = async (latestTag, release_filename, cache_filename) => {
@@ -141,6 +140,7 @@ const unarchive_qemu = async (latestTag, filename) => {
 }
 
 const setup_image_file = async (imageFilename, qemuRootdir, identityFilePath) => {
+    chmodSync(identityFilePath, 0o400)
     const setup = (proc) => {
         console.log("[+] Copying setup script")
         spawnSync('scp', [
