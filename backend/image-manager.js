@@ -148,9 +148,9 @@ const setup_image_file = async (imageFilename, qemuRootdir, identityFilePath) =>
             '-q',
             '-i', identityFilePath,
             '-P', '2223',
-            'setupcloudshell.sh',
+            'setup-cloudshell.sh',
             'root@127.0.0.1:/etc/rc.local',
-        ])
+        ], { stdio: ['ignore', 1, 2] })
         // Execute setup script via ssh
         console.log("[+] Executing setup script")
         spawnSync('ssh', [
