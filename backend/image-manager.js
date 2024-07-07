@@ -1,10 +1,11 @@
 import axios from 'axios'
-import { existsSync, fstatSync, readFileSync, renameSync } from 'fs'
+import { existsSync, openSync, closeSync, fstatSync, readFileSync, renameSync } from 'fs'
 import { spawn, spawnSync } from 'child_process'
 import process from 'process'
+import { fileURLToPath } from 'url'
 import { writeFile } from 'fs/promises'
 import qemuWrapper from './qemu-wrapper.js'
-import { resolve } from 'path'
+import { resolve, dirname } from 'path'
 
 const cheribuild_repo = "cocoa-xu/cheribuild"
 const cheribuild_repo_url = `https://github.com/${cheribuild_repo}`
@@ -47,7 +48,7 @@ const download_from_release = async (latestTag, release_filename, cache_filename
     } catch (error) {
         console.log(`[!] Failed to download ${url}: ${error}`)
     }
-    
+
     return [false, null]
 }
 
@@ -164,7 +165,9 @@ const setup_image_file = async (imageFilename, qemuRootdir, identityFilePath) =>
         }
     }
 
-    const stats = fstatSync(imageFilename)
+    const fd = openSync(imageFilename, "r")
+    const stats = fstatSync(fd)
+    closeSync(fd)
     if (stats.size < 1024 * 1024 * 1024 * 6) {
         console.log(`[!] Image file ${imageFilename} is not resized yet(${stats.size} bytes)`)
         const { status, stderr } = spawnSync(`${resolve(qemuRootdir)}/bin/qemu-img`, ['resize', '-f', 'raw', imageFilename, '+5G'], { stdio: ['ignore', 1, 2] })
@@ -172,6 +175,7 @@ const setup_image_file = async (imageFilename, qemuRootdir, identityFilePath) =>
             console.log(`[!] Failed to resize image file: ${stderr}`)
             throw new Error(`Failed to resize image file: ${stderr}`)
         }
+	console.log(`[-] Image file ${imageFilename} resized!`)
     }
 
     // Spawn qemu with the image file
@@ -207,7 +211,7 @@ function update_chericonfig(image_filename, qemu_rootdir) {
     }
     configFile.image = resolve(image_filename)
     configFile.qemu = resolve(qemu_rootdir)
-    writeFile("chericonfig.json", JSON.stringify(config, null, 2), (err) => {
+    writeFile("chericonfig.json", JSON.stringify(configFile, null, 2), (err) => {
         if (err) {
             console.log(`[!] Failed to write chericonfig.json: ${err}`)
         }
@@ -231,6 +235,7 @@ const updateImage = async () => {
     let [unarchived_qemu, qemu_rootdir] = await unarchive_qemu(latestTag, cache_filename)
     if (!unarchived_qemu) return
 
+    const __dirname = dirname(fileURLToPath(import.meta.url))
     setup_image_file(image_filename, qemu_rootdir, __dirname + '/id_rsa')
 
     update_chericonfig(image_filename, qemu_rootdir)
