@@ -140,21 +140,24 @@ const unarchive_qemu = async (latestTag, filename) => {
     }
 }
 
-const setup_image_file = async (imageFilename, qemuRootdir) => {
+const setup_image_file = async (imageFilename, qemuRootdir, identityFilePath) => {
     const setup = (proc) => {
         console.log("[+] Copying setup script")
         spawnSync('scp', [
-            '-o StrictHostKeyChecking=no',
+            '-o', 'StrictHostKeyChecking=no',
             '-q',
+            '-i', identityFilePath,
+            '-P', '2223',
             'setupcloudshell.sh',
-            'imagesetup:/etc/rc.local',
+            'root@127.0.0.1:/etc/rc.local',
         ])
         // Execute setup script via ssh
         console.log("[+] Executing setup script")
         spawnSync('ssh', [
-            '-o',
-            'StrictHostKeyChecking=no',
-            'imagesetup',
+            '-o', 'StrictHostKeyChecking=no',
+            '-p', '2223',
+            '-i', identityFilePath,
+            'root@127.0.0.1',
             'chmod +x /etc/rc.local; /etc/rc.local',
         ], { stdio: ['ignore', 1, 2] })
         if (proc) {
@@ -214,7 +217,7 @@ const updateImage = async () => {
     let [unarchived_qemu, qemu_rootdir] = await unarchive_qemu(latestTag, cache_filename)
     if (!unarchived_qemu) return
 
-    setup_image_file(image_filename, qemu_rootdir)
+    setup_image_file(image_filename, qemu_rootdir, __dirname + '/id_rsa')
 
     update_chericonfig(image_filename, qemu_rootdir)
 }

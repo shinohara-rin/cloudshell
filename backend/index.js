@@ -27,13 +27,14 @@ const io = new Server(server, {
     maxHttpBufferSize: 5e6 // 5 MB
 })
 io.on('connection', (s) => {
+    const identityFilePath = __dirname + '/id_rsa'
     const tempHome = Math.random().toString(36).slice(2, 10)
     if (!qemuReady) {
         s.emit('not-ready')
         s.disconnect()
         return
     }
-    const term = pty.spawn('ssh', ['-t', 'cloudshell', `TEMP_HOME=/tmp/${tempHome} bash`])
+    const term = pty.spawn('ssh', ['-t', '-p', '2222', '-i', identityFilePath, 'root@127.0.0.1', `TEMP_HOME=/tmp/${tempHome} bash`])
     s.on('data', (data) => {
         term.write(data)
     })
@@ -70,7 +71,7 @@ io.on('connection', (s) => {
                 return
             }
             console.log('spawning scp')
-            const sshUpload = spawn('scp', [`/tmp/upload/${tempHome}/${fileName}`, `cloudshell:/tmp/${tempHome}/`])
+            const sshUpload = spawn('scp', ['-P', '2222', '-i', identityFilePath, `/tmp/upload/${tempHome}/${fileName}`, `root@127.0.0.1:/tmp/${tempHome}/`])
             sshUpload.on('close', (code) => {
                 console.log('scp exited with', code)
                 cb(code)
